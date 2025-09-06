@@ -2,6 +2,12 @@ import { expect, test, describe } from "vitest";
 import { getAPIKey } from "src/api/auth";
 import { IncomingHttpHeaders } from "http";
 
+// Custom type for testing that allows arrays for header values
+type TestHeaders = {
+  authorization?: string | string[] | undefined;
+  [key: string]: string | string[] | undefined;
+};
+
 describe("getAPIKey", () => {
   test("returns API key when valid authorization header is provided", () => {
     const headers: IncomingHttpHeaders = {
@@ -85,21 +91,21 @@ describe("getAPIKey", () => {
   });
 
   test("throws error when authorization header is string array (current implementation bug)", () => {
-    const headers: IncomingHttpHeaders = {
-      authorization: ["ApiKey test123", "ApiKey test456"] as any, // Type assertion to bypass TS error
+    const headers: TestHeaders = {
+      authorization: ["ApiKey test123", "ApiKey test456"], // No type assertion needed
     };
 
     // Current implementation will throw because it calls .split() on an array
-    expect(() => getAPIKey(headers)).toThrow();
+    expect(() => getAPIKey(headers as IncomingHttpHeaders)).toThrow();
   });
 
   test("throws error when authorization header is empty array (current implementation bug)", () => {
-    const headers: IncomingHttpHeaders = {
-      authorization: [] as any, // Type assertion to bypass TS error
+    const headers: TestHeaders = {
+      authorization: [], // No type assertion needed
     };
 
     // Current implementation will throw because it calls .split() on an array
-    expect(() => getAPIKey(headers)).toThrow();
+    expect(() => getAPIKey(headers as IncomingHttpHeaders)).toThrow();
   });
 
   test('handles case-sensitive "ApiKey" prefix correctly', () => {
